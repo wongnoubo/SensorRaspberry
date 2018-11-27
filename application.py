@@ -27,6 +27,7 @@ if __name__ =="__main__":
             threads.append(thread2)
             threads.append(threadcpu)
             threads.append(threadhcsr)
+            print threading.enumerate()
             # 等待所有线程完成
             for t in threads:
                 t.join()
@@ -34,7 +35,3 @@ if __name__ =="__main__":
         except Exception, e:
             print e
             GPIO.cleanup()
-            thread1.join()
-            thread2.join()
-            threadcpu.join()
-            threadhcsr.join()

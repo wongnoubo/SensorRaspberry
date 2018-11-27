@@ -59,24 +59,24 @@ def _do_click_V1001_TEMPERATURES(tablename,TEMPERPORT):
 
     if check == tmp:
         print"temperature : ", temperature, ", humidity : ", humidity
-        jsondata = tojson.THresultToJson(temperature,humidity)
-        mysqlDbthvalue(tablename,jsondata)
+        #jsondata = tojson.THresultToJson(temperature,humidity)
+        mysqlDbthvalue(tablename,temperature,humidity)
     else:
         print "wrong"
        # print "temperature : ", temperature, ", humidity : ", humidity, " check : ", check, " tmp : ", tmp
     #GPIO.cleanup()
 
 #连接数据库
-def mysqlDbthvalue(tablename,jsondata):
+def mysqlDbthvalue(tablename,temperature,humidity):
     # 建立和数据库的连接
     db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
     # 获取操作游标
     cursor = db.cursor()
-    createtablesql="CREATE TABLE if not exists  "+tablename+" ( `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `thvalue` varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    createtablesql="CREATE TABLE if not exists  "+tablename+" ( `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `temperature` varchar(50) DEFAULT NULL,`humidity` varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
     cursor.execute(createtablesql)
     # 执行sql
     try:
-        result = cursor.execute("insert into "+tablename+" (thvalue) VALUES ('%s')" % (jsondata))
+        result = cursor.execute("insert into "+tablename+" (temperature,humidity) VALUES ('%s','%s')" % (temperature,humidity))
         db.commit()
         print result
     except Exception as e:

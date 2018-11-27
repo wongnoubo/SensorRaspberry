@@ -23,10 +23,14 @@ def beep():
         time.sleep(0.5)
 
 def detct():
+    time.sleep(1)
+    personflag=0
     if GPIO.input(HCSRPORT) == True:
         print "Someone is closing!"
         camera.camera()
         beep()
+        personflag = 1
+        return personflag
     else:
         GPIO.output(BEEPPORT, GPIO.HIGH)
         print "No anybody!"
