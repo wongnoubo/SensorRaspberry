@@ -29,9 +29,10 @@ def mysqlDbCamera():
     db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
     # 获取操作游标
     cursor = db.cursor()
+    createtablesql=""
     imgdata = MySQLdb.Binary(img)
     n = cursor.execute("select * from img")#获取多少条数据
-    print n
+    print "照片：",n
     camerasql = "INSERT INTO img (id,imgname,imgs) VALUES(%s,%s,%s)"
     args=(n+1,imglist[0],imgdata)
     cursor.execute(camerasql,args)

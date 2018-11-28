@@ -8,7 +8,7 @@ import threading
 
 import tojson
 
-def _do_click_V1001_TEMPERATURES(tablename,TEMPERPORT):
+def _do_click_V1001_TEMPERATURES(tablename,TEMPERPORT,address):
     data = []
     j = 0
     GPIO.setmode(GPIO.BCM)
@@ -60,23 +60,23 @@ def _do_click_V1001_TEMPERATURES(tablename,TEMPERPORT):
     if check == tmp:
         print"temperature : ", temperature, ", humidity : ", humidity
         #jsondata = tojson.THresultToJson(temperature,humidity)
-        mysqlDbthvalue(tablename,temperature,humidity)
+        mysqlDbthvalue(tablename,address,temperature,humidity)
     else:
         print "wrong"
        # print "temperature : ", temperature, ", humidity : ", humidity, " check : ", check, " tmp : ", tmp
     #GPIO.cleanup()
 
 #连接数据库
-def mysqlDbthvalue(tablename,temperature,humidity):
+def mysqlDbthvalue(tablename,address,temperature,humidity):
     # 建立和数据库的连接
     db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
     # 获取操作游标
     cursor = db.cursor()
-    createtablesql="CREATE TABLE if not exists  "+tablename+" ( `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `temperature` varchar(50) DEFAULT NULL,`humidity` varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    createtablesql="CREATE TABLE if not exists  "+tablename+" ( `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, `temperature` varchar(50) DEFAULT NULL,`humidity` varchar(50) DEFAULT NULL, "+address+" varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
     cursor.execute(createtablesql)
     # 执行sql
     try:
-        result = cursor.execute("insert into "+tablename+" (temperature,humidity) VALUES ('%s','%s')" % (temperature,humidity))
+        result = cursor.execute("insert into "+tablename+" (temperature,humidity,address) VALUES ('%s','%s','%s')" % (temperature,humidity,address))
         db.commit()
         print result
     except Exception as e:
@@ -86,12 +86,13 @@ def mysqlDbthvalue(tablename,temperature,humidity):
 
 #温湿度计进程
 class myThreadth(threading.Thread):
-    def __init__(self, threadID, TEMPERPORT, interval,tablename):
+    def __init__(self, threadID, TEMPERPORT, interval,tablename,address):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.TEMPERPORT = TEMPERPORT
         self.interval = interval
         self.tablename = tablename
+        self.address = address
 
     def run(self):
         threadLock = threading.Lock()
@@ -102,6 +103,6 @@ class myThreadth(threading.Thread):
         # 可选的timeout参数不填时将一直阻塞直到获得锁定
         # 否则超时后将返回False
         threadLock.acquire()
-        _do_click_V1001_TEMPERATURES(self.tablename,self.TEMPERPORT)
+        _do_click_V1001_TEMPERATURES(self.tablename,self.TEMPERPORT,self.address)
         # 释放锁
         threadLock.release()
