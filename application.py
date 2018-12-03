@@ -13,8 +13,8 @@ if __name__ =="__main__":
     while 1:
         try:
             # 创建新线程
-            thread1 = thsensor.myThreadth(1, 17, 20,"thsensor1","主卧")#温湿度1
-            thread2 = thsensor.myThreadth(2, 27, 20,"thsensor2","主房")#温湿度2
+            thread1 = thsensor.myThreadth(1, 17, 20,"temperatureSensortable0","humiditySensorTable0","客厅")#温湿度1
+            thread2 = thsensor.myThreadth(2, 27, 20,"temperatureSensortable1","humiditySensorTable1","儿童房")#温湿度2
             threadcpu = threading.Thread(target=cputemp.getCpuTempInterval)#cpu
             threadhcsr = beep.cameraThreadth(6)#人体监测
             # 开启新线程
