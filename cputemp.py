@@ -12,18 +12,23 @@ def getCpuTemp(address):
     cputemp = float(file.read())/1000
     file.close()
     print "cputemp : %.3f" %cputemp
-    mysqlDbCpuTemp(cputemp,"RaspberryCpuTempTable0",address)
+    mysqlDbCpuTemp(cputemp,address)
 
 def getCpuTempInterval():
-    cputempthread = threading.Timer(10,getCpuTemp,["客厅"])#需要查一下怎么传入String参数，int类型的参数是直接用个方括号括起来就可以
+    cputempthread = threading.Timer(10,getCpuTemp,["儿童房"])#需要查一下怎么传入String参数，int类型的参数是直接用个方括号括起来就可以
     cputempthread.start()
 
-def mysqlDbCpuTemp(cputemp,tablename,address):
+def mysqlDbCpuTemp(cputemp,address):
+    tablename = "sensor_info"
     db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor", charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
+    selectraspberrytablename = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='树莓派cpu温度'"
+    cursor.execute(selectraspberrytablename)
+    cputemptablename = cursor.fetchall()
+    print cputemptablename
     try:
-        result = cursor.execute("insert into "+tablename+" (temperature,address) VALUES ('%s','%s')" % (cputemp,address))
+        result = cursor.execute("insert into "+cputemptablename[0][5]+" (temperature,address) VALUES ('%s','%s')" % (cputemp,address))
         db.commit()
         print result
     except Exception as e:

@@ -34,7 +34,7 @@ def hcsrInterval():
     cputempthread.start()
 
 def mysqlDbHcsr(personflag,tablename,address):
-    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
+    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor",charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
     createtablesql = "CREATE TABLE if not exists "+tablename+" (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,`personflag` varchar(50) DEFAULT NULL, "+ address+" varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"

@@ -11,7 +11,7 @@ sys.setdefaultencoding('utf-8')
 
 import tojson
 
-def _do_click_V1001_TEMPERATURES(temptablename,humitablename,TEMPERPORT,address):
+def _do_click_V1001_TEMPERATURES(TEMPERPORT,address):
     data = []
     j = 0
     GPIO.setmode(GPIO.BCM)
@@ -63,22 +63,31 @@ def _do_click_V1001_TEMPERATURES(temptablename,humitablename,TEMPERPORT,address)
     if check == tmp:
         print"temperature : ", temperature, ", humidity : ", humidity
         #jsondata = tojson.THresultToJson(temperature,humidity)
-        mysqlDbthvalue(temptablename,humitablename,address,temperature,humidity)
+        mysqlDbthvalue(address,temperature,humidity)
     else:
         print "wrong"
        # print "temperature : ", temperature, ", humidity : ", humidity, " check : ", check, " tmp : ", tmp
     #GPIO.cleanup()
 
 #连接数据库
-def mysqlDbthvalue(temptablename,humitablename,address,temperature,humidity):
+def mysqlDbthvalue(address,temperature,humidity):
+    tablename = "sensor_info"
     # 建立和数据库的连接
     db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor", charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
+    selecttemptablenamesql = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='温度传感器'"
+    cursor.execute(selecttemptablenamesql)
+    temptablename = cursor.fetchall()
+    print temptablename
+    selecthumitablenamesql = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='湿度传感器'"
+    cursor.execute(selecthumitablenamesql)
+    humitablename = cursor.fetchall()
+    print humitablename
     # 执行sql
     try:
-        result1 = cursor.execute("insert into "+temptablename+" (temperature,address) VALUES ('%s','%s')" % (temperature,address))
-        result2 = cursor.execute("insert into "+humitablename+" (humidity,address) VALUES ('%s','%s')" % (humidity,address))
+        result1 = cursor.execute("insert into "+temptablename[0][5]+" (temperature,address) VALUES ('%s','%s')" % (temperature,address))
+        result2 = cursor.execute("insert into "+humitablename[0][5]+" (humidity,address) VALUES ('%s','%s')" % (humidity,address))
         db.commit()
         print result1
         print result2
@@ -89,13 +98,11 @@ def mysqlDbthvalue(temptablename,humitablename,address,temperature,humidity):
 
 #温湿度计进程
 class myThreadth(threading.Thread):
-    def __init__(self, threadID, TEMPERPORT, interval,temptablename,humitablename,address):
+    def __init__(self, threadID, TEMPERPORT, interval,address):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.TEMPERPORT = TEMPERPORT
         self.interval = interval
-        self.temptablename = temptablename
-        self.humitablename = humitablename
         self.address = address
 
     def run(self):
@@ -107,6 +114,6 @@ class myThreadth(threading.Thread):
         # 可选的timeout参数不填时将一直阻塞直到获得锁定
         # 否则超时后将返回False
         threadLock.acquire()
-        _do_click_V1001_TEMPERATURES(self.temptablename,self.humitablename,self.TEMPERPORT,self.address)
+        _do_click_V1001_TEMPERATURES(self.TEMPERPORT,self.address)
         # 释放锁
         threadLock.release()
