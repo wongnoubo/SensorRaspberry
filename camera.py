@@ -6,6 +6,10 @@ import sys
 import os
 import commands
 from datetime import datetime
+import time
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 def camera():
     commands.getoutput("fswebcam -p YUYV -d /dev/video0 -r 640x480 /home/pi/sensor/images170/" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".jpg")
@@ -16,25 +20,38 @@ def readImg():
     #path = "f:\\img\\"
     path="/home/pi/sensor/images170/"
     path_list = os.listdir(path)
-    path_list.reverse()
-    return path_list
+    file_dict = {}
+    for i in path_list:  # 遍历所有文件
+        ctime = os.stat(os.path.join(path, i)).st_ctime
+        file_dict[ctime] = i  # 添加创建时间和文件名到字典
+    max_ctime = max(file_dict.keys())  # 取值最大的时间
+    #path_list.reverse()
+    print file_dict[max_ctime]
+    return file_dict[max_ctime]
 
 def mysqlDbCamera():
     #path = "f:\\img\\"
-    path = "/home/pi/sensor/images170/"
+    #path = "/home/pi/sensor/images170/"
     imglist = readImg()
-    fp = open(path+imglist[0],"rb")
+    print "1" + imglist
+    path = "/home/pi/sensor/images170/"
+    fp = open(path+imglist,"rb")
     img = fp.read()
     fp.close()
-    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
+    db = MySQLdb.connect(host='localhost', user="root", passwd="123456", db="sensor",charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
-    createtablesql=""
+   # createtablesql=""
     imgdata = MySQLdb.Binary(img)
-    n = cursor.execute("select * from img")#获取多少条数据
-    print "照片：",n
-    camerasql = "INSERT INTO img (id,imgname,imgs) VALUES(%s,%s,%s)"
-    args=(n+1,imglist[0],imgdata)
+    #n = cursor.execute("select * from img")#获取多少条数据
+    #print "照片：",n
+   # n = cursor.execute("select id from img")
+    #print  "照片：",n
+    #camerasql = "INSERT INTO img (id,imgname,imgs) VALUES(%s,%s,%s)"
+    #args=(n+1,imglist[0],imgdata)
+    camerasql = "INSERT INTO img (imgname,imgs) VALUES(%s,%s)"
+    print "2"+imglist
+    args = (imglist, imgdata)
     cursor.execute(camerasql,args)
     cursor.close()
     db.commit()

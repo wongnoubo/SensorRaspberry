@@ -1,0 +1,1 @@
+python thapplication.py & python main.py

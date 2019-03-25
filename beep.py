@@ -6,6 +6,9 @@ import time
 import camera
 import threading
 import MySQLdb
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 HCSRPORT = 18  # GPIO12
 
@@ -16,31 +19,26 @@ def init():
 
 def detct():
     time.sleep(1)
-    personflag=0
     if GPIO.input(HCSRPORT) == True:
         print "Someone is closing!"
-        camera.camera()
-        personflag = 1
-        mysqlDbHcsr(personflag,"HcsrSensor1","儿童房")
-        return personflag
+        ishumen=1
+        mysqlDbHcsr(ishumen,"客厅")
+        camera.camera();
     else:
         print "No anybody!"
-        return personflag
+        ishumen=0
+        mysqlDbHcsr(ishumen,"客厅")
 
-#10s检查一次
-def hcsrInterval():
-    init()
-    cputempthread = threading.Timer(6,detct)
-    cputempthread.start()
-
-def mysqlDbHcsr(personflag,tablename,address):
-    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor",charset='utf8')
+def mysqlDbHcsr(ishumen,address):
+    tablename = "sensorinfo0"
+    db = MySQLdb.connect(host='localhost', user="root", passwd="123456", db="sensor",charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
-    createtablesql = "CREATE TABLE if not exists "+tablename+" (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,`personflag` varchar(50) DEFAULT NULL, "+ address+" varchar(50) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-    cursor.execute(createtablesql)
+    selecthumentablesql = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='红外人体传感器'"
+    cursor.execute(selecthumentablesql)
+    humentablename = cursor.fetchall()
     try:
-        result = cursor.execute("insert into "+tablename+" (personflag,address) VALUES ('%s','%s')" % (personflag,address))
+        result = cursor.execute("insert into "+humentablename[0][5]+" (humen,address) VALUES ('%s','%s')" % (ishumen, address))
         db.commit()
         print result
     except Exception as e:

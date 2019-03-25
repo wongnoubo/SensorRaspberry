@@ -9,8 +9,6 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-import tojson
-
 def _do_click_V1001_TEMPERATURES(TEMPERPORT,address):
     data = []
     j = 0
@@ -62,28 +60,23 @@ def _do_click_V1001_TEMPERATURES(TEMPERPORT,address):
 
     if check == tmp:
         print"temperature : ", temperature, ", humidity : ", humidity
-        #jsondata = tojson.THresultToJson(temperature,humidity)
         mysqlDbthvalue(address,temperature,humidity)
     else:
         print "wrong"
-       # print "temperature : ", temperature, ", humidity : ", humidity, " check : ", check, " tmp : ", tmp
-    #GPIO.cleanup()
 
 #连接数据库
 def mysqlDbthvalue(address,temperature,humidity):
-    tablename = "sensor_info"
+    tablename = "sensorinfo0"
     # 建立和数据库的连接
-    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor", charset='utf8')
+    db = MySQLdb.connect(host='localhost', user="root", passwd="123456", db="sensor", charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
     selecttemptablenamesql = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='温度传感器'"
     cursor.execute(selecttemptablenamesql)
     temptablename = cursor.fetchall()
-    print temptablename
     selecthumitablenamesql = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='湿度传感器'"
     cursor.execute(selecthumitablenamesql)
     humitablename = cursor.fetchall()
-    print humitablename
     # 执行sql
     try:
         result1 = cursor.execute("insert into "+temptablename[0][5]+" (temperature,address) VALUES ('%s','%s')" % (temperature,address))

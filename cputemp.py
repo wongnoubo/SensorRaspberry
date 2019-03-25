@@ -4,6 +4,7 @@
 import threading
 import MySQLdb
 import sys
+import time
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -14,24 +15,38 @@ def getCpuTemp(address):
     print "cputemp : %.3f" %cputemp
     mysqlDbCpuTemp(cputemp,address)
 
-def getCpuTempInterval():
-    cputempthread = threading.Timer(10,getCpuTemp,["儿童房"])#需要查一下怎么传入String参数，int类型的参数是直接用个方括号括起来就可以
-    cputempthread.start()
-
 def mysqlDbCpuTemp(cputemp,address):
-    tablename = "sensor_info"
-    db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor", charset='utf8')
+    tablename = "sensorinfo0"
+    db = MySQLdb.connect(host='localhost', user="root", passwd="123456", db="sensor", charset='utf8')
     # 获取操作游标
     cursor = db.cursor()
     selectraspberrytablename = "select * from "+tablename+" where sensorAddress = '"+address+"' and sensorName ='树莓派cpu温度'"
     cursor.execute(selectraspberrytablename)
     cputemptablename = cursor.fetchall()
-    print cputemptablename
     try:
-        result = cursor.execute("insert into "+cputemptablename[0][5]+" (temperature,address) VALUES ('%s','%s')" % (cputemp,address))
+        result = cursor.execute("insert into "+cputemptablename[0][5]+" (Raspberry,address) VALUES ('%s','%s')" % (cputemp,address))
         db.commit()
         print result
     except Exception as e:
         db.rollback()
     # 关闭连接，释放资源
     db.close()
+
+# 温湿度计进程
+class myThreadth(threading.Thread):
+    def __init__(self, interval, address):
+        threading.Thread.__init__(self)
+        self.interval = interval
+        self.address = address
+
+    def run(self):
+        threadLock = threading.Lock()
+        time_remaining = self.interval - time.time() % self.interval
+        time.sleep(time_remaining)
+        # 获得锁，成功获得锁定后返回True
+        # 可选的timeout参数不填时将一直阻塞直到获得锁定
+        # 否则超时后将返回False
+        threadLock.acquire()
+        getCpuTemp(self.address)
+        # 释放锁
+        threadLock.release()
