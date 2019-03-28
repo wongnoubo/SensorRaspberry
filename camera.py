@@ -61,7 +61,7 @@ def mysqlDbCamera():
 #从mysql中将图片拿出来
 def mysqlDbOpen():
     try:
-        db = MySQLdb.connect(host='119.23.248.55', user="root", passwd="123456", db="sensor")
+        db = MySQLdb.connect(host='localhost', user="root", passwd="123456", db="sensor")
         cursor = db.cursor()
         cursor.execute("SELECT imgs FROM img LIMIT 1")
         fout = open('huanglei.png', 'wb')
